@@ -40,7 +40,7 @@ async function getThreadMessages(threadId: string): Promise<Message[]> {
         .map(msg => ({
             id: msg.id,
             role: msg.role as "user" | "assistant",
-            content: msg.content[0].text.value,
+            content: msg.content[0].type === 'text' ? msg.content[0].text.value : '',
             createdAt: new Date(msg.created_at * 1000).getTime(),
         }))
         .sort((a, b) => a.createdAt - b.createdAt);
@@ -161,6 +161,7 @@ export async function createAssistantWithFile({
         const uploadedFile = await openai.files.create({
             file: file,
             purpose: "assistants",
+            
         });
 
         // Create an assistant with the file
@@ -175,6 +176,7 @@ export async function createAssistantWithFile({
         const vectorStore = await openai.beta.vectorStores.create({
             name: "Financial Statement",
             file_ids: [uploadedFile.id],
+            expires_after: {days: 1, anchor: "last_active_at"}
         });
 
         await openai.beta.assistants.update(assistant.id, {
