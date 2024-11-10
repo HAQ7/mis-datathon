@@ -1,65 +1,260 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import elmLogo from '@/assets/elm.png';
-import arabLogo from '@/assets/arabseaco_logo.jpeg';
-import logo from '@/assets/logo_with_glow.svg';
-import leftGlow from '@/assets/lower_left_glow.png';
-import rightGlow from '@/assets/upper_right_glow.png';
-import getMessage from '@/actions/get-message';
-import { useState } from 'react';
+import Image from "next/image";
+import elmLogo from "@/assets/elm.png";
+import STC from "@/assets/stc.png";
+import logo from "@/assets/logo_with_glow.svg";
+
+import { Textarea } from "@/components/ui/textarea";
+import { sendMessage } from "@/actions/send-message";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import UserMessage from "@/components/ui/userMessage";
+import AiMessage from "@/components/ui/aiMessage";
+import Loading from "@/components/ui/loading";
+import back from "@/assets/back.svg";
+import add from "@/assets/add.svg";
+import { Input } from "@/components/ui/input";
+
+type Message = {
+    id: string;
+    role: "user" | "assistant";
+    content: string;
+    createdAt: number;
+};
+
+type ChatResponse = {
+    threadId: string;
+    messages: Message[];
+    error?: string;
+};
 
 export default function Home() {
-  const [selectedCompany, setSelectedCompany] = useState('');
-  return (
-    <section className="grid place-items-center min-h-screen">
-      <Image
-        src={leftGlow}
-        alt="elm logo"
-        className="absolute bottom-0 left-0 -z-10"
-      />
-      <Image
-        src={rightGlow}
-        alt="elm logo"
-        className="absolute top-0 right-0 -z-10"
-      />
-      <div className="grid gap-4 ">
-        <h1 className="grid place-items-center">
-          <Image src={logo} alt="elm logo" className="" />
-        </h1>
-        {!selectedCompany ? (
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => setSelectedCompany('ELM')}
-              className="shadow-lg hover:shadow-md transition-all rounded-full p-5 bg-white"
+    const [selectedCompany, setSelectedCompany] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const textRef = useRef({} as HTMLTextAreaElement);
+    const fileRef = useRef({} as HTMLInputElement);
+    const sentMessage = useRef("");
+    const [message, setMessage] = useState(null as ChatResponse | null);
+    console.log(message);
+    const variants = {
+        hidden: { opacity: 0, y: 100 },
+        visible: { opacity: 1, y: 0 },
+    };
+    const sendMessageHandler = async () => {
+        if (!textRef.current.value) return;
+        if (selectedCompany === "other" && fileRef.current && fileRef.current.files && fileRef.current.files[0].size === 0)
+            return;
+        sentMessage.current = textRef.current.value;
+        textRef.current.value = "";
+        setIsLoading(true);
+        let messageObj;
+        if (selectedCompany === "other" && fileRef.current) {
+            const formData = new FormData();
+            if (fileRef.current.files) {
+                formData.append("file", fileRef.current.files[0]);
+            }
+            messageObj = await sendMessage(
+                sentMessage.current,
+                selectedCompany,
+                formData
+            );
+        } else {
+            messageObj = await sendMessage(
+                sentMessage.current,
+                selectedCompany
+            );
+        }
+        setMessage(messageObj);
+        setIsLoading(false);
+    };
+    const clearCookies = () => {
+        const cookies = document.cookie.split(";");
+
+        // Loop through cookies and expire them
+        for (const cookie of cookies) {
+            const name = cookie.split("=")[0].trim();
+            // Set expiry to a past date to remove the cookie
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+        }
+    };
+    useEffect(() => {
+        clearCookies();
+    }, []);
+    if ((message || isLoading) && selectedCompany) {
+        return (
+            <div className="h-screen w-[90vw] max-w-[40rem] p-5 flex flex-col justify-between items-center relative">
+                <Image
+                    onClick={() => {
+                        clearCookies();
+                        setMessage(null);
+                        setSelectedCompany("");
+                    }}
+                    src={back}
+                    alt="back icon"
+                    className="w-10 cursor-pointer absolute left-0"
+                    priority
+                />
+                <Image src={logo} alt="logo" className="" priority />
+                <div className="overflow-y-auto modern-scroll overflow-x-hidden flex-1 w-full flex flex-col gap-2 my-3">
+                    {message?.messages.map(msg => {
+                        if (msg.role === "user") {
+                            return (
+                                <UserMessage key={msg.id}>
+                                    {msg.content}
+                                </UserMessage>
+                            );
+                        }
+                        return (
+                            <AiMessage key={msg.id}>{msg.content}</AiMessage>
+                        );
+                    })}
+                    {isLoading && (
+                        <>
+                            <UserMessage>{sentMessage.current}</UserMessage>
+                            <AiMessage>
+                                <Loading />
+                            </AiMessage>
+                        </>
+                    )}
+                </div>
+                <motion.div
+                    key="search"
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="w-[90vw] max-w-[40rem] bg-white rounded-xl shadow-md grid gap-2 p-2 "
+                >
+                    <Textarea
+                        ref={textRef}
+                        placeholder={
+                            "أسأل عن شركة " +
+                            (selectedCompany === "other"
+                                ? "المرفقة"
+                                : selectedCompany)
+                        }
+                        className="!outline-none !ring-0 flex-1 px-2 flex items-center h-auto !border-none resize-none shadow-none"
+                    />
+                    <button
+                        onClick={sendMessageHandler}
+                        className="px-5 h-8 w-24 bg-black hover:bg-[#21A07B] shadow-xl transition-colors text-white rounded-full"
+                    >
+                        ارسال
+                    </button>
+                </motion.div>
+            </div>
+        );
+    }
+    return (
+        <div className="grid gap-4 place-items-center relative">
+            <motion.div
+                initial={{ y: -100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                layout
+                className="grid place-items-center"
             >
-              <Image
-                src={elmLogo}
-                alt="elm logo"
-                className="w-20 aspect-square"
-              />
-            </button>
-            <button className="shadow-lg hover:shadow-md transition-all rounded-full p-5 bg-white">
-              <Image
-                src={arabLogo}
-                alt="elm logo"
-                className="w-20 aspect-square"
-              />
-            </button>
-          </div>
-        ) : (
-          <div className="lg:w-3/4 max-w-[500px] lg:min-w-[300px] lg:mx-auto bg-white rounded-full shadow-md flex w-full items-center p-2 ">
-            <input
-              placeholder="ابحث"
-              type="text"
-              className="outline-none flex-1 px-2"
-            />
-            <button onClick={() => getMessage()} className="px-5 h-8 bg-black text-white rounded-full">
-              بحث
-            </button>
-          </div>
-        )}
-      </div>
-    </section>
-  );
+                <Image src={logo} alt="logo" className="" />
+            </motion.div>
+
+            {!selectedCompany ? (
+                <div>
+                    <motion.p
+                        initial={{ y: -100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className="text-[#0B3A3C] text-center"
+                    >
+                        اختر الشركة التي تريد البحث عنها, او ارفق ملف الشركة
+                        التي تريد المعرفه عنها
+                    </motion.p>
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={variants}
+                        transition={{ staggerChildren: 0.1 }}
+                        className="flex flex-wrap justify-center gap-10 bg-white shadow-lg p-2 px-5 rounded-xl overflow-hidden mt-5"
+                    >
+                        <motion.button
+                            variants={variants}
+                            onClick={() => setSelectedCompany("علم")}
+                            whileHover={{ scale: 1.1 }}
+                            className=""
+                        >
+                            <Image
+                                src={elmLogo}
+                                alt="elm logo"
+                                className="w-14"
+                            />
+                        </motion.button>
+                        <motion.button
+                            variants={variants}
+                            onClick={() => setSelectedCompany("STC")}
+                            whileHover={{ scale: 1.1 }}
+                            className=""
+                        >
+                            <Image src={STC} alt="STC" className="w-14" />
+                        </motion.button>
+                        <motion.button
+                            variants={variants}
+                            onClick={() => setSelectedCompany("other")}
+                            whileHover={{ scale: 1.1 }}
+                            className=""
+                        >
+                            <Image src={add} alt="add icon" className="w-14" />
+                        </motion.button>
+                    </motion.div>
+                </div>
+            ) : (
+                <>
+                    <motion.div
+                        key={"back"}
+                        initial={{ y: -100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        onClick={() => setSelectedCompany("")}
+                        className="cursor-pointer absolute left-0 top-0 flex gap-2 hover:bg-[#21A07B] hover:text-white p-2 rounded-full transition-colors"
+                    >
+                        العودة
+                    </motion.div>
+
+                    <motion.div
+                        key="search"
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className="w-[90vw] max-w-[40rem] bg-white rounded-xl shadow-md grid gap-5 p-2 "
+                    >
+                        {selectedCompany === "other" && (
+                            <Input
+                                ref={fileRef}
+                                type="file"
+                                accept=".pdf"
+                                className="max-w-max w-full"
+                            />
+                        )}
+                        <Textarea
+                            ref={textRef}
+                            placeholder={
+                                "أسأل عن شركة " +
+                                (selectedCompany === "other"
+                                    ? "المرفقة"
+                                    : selectedCompany)
+                            }
+                            className="!outline-none !ring-0 modern-scroll flex-1 px-2 flex items-center h-auto border-none resize-none shadow-none"
+                        />
+                        <button
+                            onClick={sendMessageHandler}
+                            className="px-5 h-8 w-min bg-black  hover:bg-[#21A07B] shadow-xl transition-colors text-white rounded-full flex items-center justify-center gap-2"
+                        >
+                            ارسال{" "}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                className="w-5 rotate-180"
+                            >
+                                <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                            </svg>
+                        </button>
+                    </motion.div>
+                </>
+            )}
+        </div>
+    );
 }
