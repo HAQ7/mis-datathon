@@ -4,7 +4,6 @@ import Image from "next/image";
 import elmLogo from "@/assets/elm.png";
 import STC from "@/assets/stc.png";
 import logo from "@/assets/logo_with_glow.svg";
-
 import { Textarea } from "@/components/ui/textarea";
 import { sendMessage } from "@/actions/send-message";
 import { useEffect, useRef, useState } from "react";
@@ -41,6 +40,7 @@ export default function Home() {
         hidden: { opacity: 0, y: 100 },
         visible: { opacity: 1, y: 0 },
     };
+    console.log(message)
     const sendMessageHandler = async () => {
         if (!textRef.current.value) return;
         if (

@@ -68,7 +68,7 @@ export async function sendMessage(
         const file = formData?.get("file") as File;
         let threadId = cookies().get("threadId")?.value;
         let assistantId;
-        if (company === "other" && file?.size > 0) {
+        if (company === "other") {
             assistantId = cookies().get("assistantId")?.value;
             if (!assistantId) {
                 assistantId = await createAssistantWithFile({
@@ -168,8 +168,8 @@ export async function createAssistantWithFile({
         const assistant = await openai.beta.assistants.create({
             name: "Financial Analyst Assistant",
             instructions:
-                "You are an expert financial analyst. Use you knowledge base to answer questions about audited financial statements. - you can  use the provided file for insight. - you can run code to answer questions that need calculations. - if asked about other companies you just mention the average company in that particular field. ",
-            model: "gpt-4o",
+                "You are an expert financial analyst. Use you knowledge base to answer questions about audited financial statements. - you can  use the provided file for insight. - if asked about other companies you just mention the average company in that particular field. - you can run code to answer questions that need calculations.",
+            model: "gpt-4o-mini",
             tools: [{ type: "file_search" }, { type: "code_interpreter" }],
         });
 
