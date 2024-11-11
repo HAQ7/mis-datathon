@@ -9,6 +9,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import path from "path";
+import fs from "fs/promises";
 
 function isArabic(text: string) {
     // Arabic unicode range regex
@@ -32,10 +33,11 @@ export async function sendMessageOpen(
     });
     let loader;
     if (selectedCompany === "علم") {
-      
-        loader = new PDFLoader(path.resolve("elm.pdf"));
+        
+        loader = new PDFLoader(process.cwd() + "/elm.pdf");
     } else if (selectedCompany === "STC") {
-        loader = new PDFLoader(path.resolve("stc.pdf"));
+       
+        loader = new PDFLoader(process.cwd() + "/stc.pdf");
     } else {
         loader = new PDFLoader(file);
     }
@@ -64,7 +66,8 @@ export async function sendMessageOpen(
     const retrievedDocs = await retriever.invoke(question);
 
     if (isArabic(question)) {
-        question = question + " \n\n\n ! يجب عليك الاجابة على السؤال باللغة العربية";
+        question =
+            question + " \n\n\n ! يجب عليك الاجابة على السؤال باللغة العربية";
     }
 
     console.log(question);
