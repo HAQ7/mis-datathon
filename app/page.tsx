@@ -14,19 +14,7 @@ import Loading from "@/components/ui/loading";
 import back from "@/assets/back.svg";
 import add from "@/assets/add.svg";
 import { Input } from "@/components/ui/input";
-
-type Message = {
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-    createdAt: number;
-};
-
-type ChatResponse = {
-    threadId: string;
-    messages: Message[];
-    error?: string;
-};
+import { sendMessageOpen } from "@/actions/send-message-open";
 
 export default function Home() {
     const [selectedCompany, setSelectedCompany] = useState("");
@@ -35,12 +23,14 @@ export default function Home() {
     const fileRef = useRef({} as HTMLInputElement);
     const overflowContainerRef = useRef({} as HTMLDivElement);
     const sentMessage = useRef("");
-    const [message, setMessage] = useState(null as ChatResponse | null);
+    const isOpenOrClosed = useRef("open");
+    const switchRef = useRef({} as any);
+    const [message, setMessage] = useState(null as any);
     const variants = {
         hidden: { opacity: 0, y: 100 },
         visible: { opacity: 1, y: 0 },
     };
-    console.log(message)
+
     const sendMessageHandler = async () => {
         if (!textRef.current.value) return;
         if (
@@ -59,18 +49,55 @@ export default function Home() {
             if (fileRef.current.files) {
                 formData.append("file", fileRef.current.files[0]);
             }
-            messageObj = await sendMessage(
-                sentMessage.current,
-                selectedCompany,
-                formData
-            );
+            if (isOpenOrClosed.current === "open") {
+                messageObj = await sendMessageOpen(
+                    sentMessage.current,
+                    selectedCompany,
+                    formData
+                );
+            } else {
+                messageObj = await sendMessage(
+                    sentMessage.current,
+                    selectedCompany,
+                    formData
+                );
+            }
         } else {
-            messageObj = await sendMessage(
-                sentMessage.current,
-                selectedCompany
-            );
+            if (isOpenOrClosed.current === "open") {
+                messageObj = await sendMessageOpen(
+                    sentMessage.current,
+                    selectedCompany
+                );
+            } else {
+                messageObj = await sendMessage(
+                    sentMessage.current,
+                    selectedCompany
+                );
+            }
         }
-        setMessage(messageObj);
+        if (isOpenOrClosed.current === "open") {
+            if (message) {
+                setMessage((prevState: any) => {
+                    return {
+                        messages: [
+                            ...prevState.messages,
+                            { role: "user", content: sentMessage.current },
+                            { role: "assistant", content: messageObj },
+                        ],
+                    };
+                });
+            } else {
+                setMessage({
+                    messages: [
+                        { role: "user", content: sentMessage.current },
+                        { role: "assistant", content: messageObj },
+                    ],
+                });
+            }
+        } else {
+            setMessage(messageObj);
+        }
+        console.log(messageObj)
         setIsLoading(false);
     };
 
@@ -113,17 +140,15 @@ export default function Home() {
                     ref={overflowContainerRef}
                     className="overflow-y-auto modern-scroll overflow-x-hidden flex-1 w-full flex flex-col gap-2 my-3"
                 >
-                    {message?.messages.map(msg => {
+                    {message?.messages.map((msg: any, index: any) => {
                         if (msg.role === "user") {
                             return (
-                                <UserMessage key={msg.id}>
+                                <UserMessage key={index}>
                                     {msg.content}
                                 </UserMessage>
                             );
                         }
-                        return (
-                            <AiMessage key={msg.id}>{msg.content}</AiMessage>
-                        );
+                        return <AiMessage key={index}>{msg.content}</AiMessage>;
                     })}
                     {isLoading && (
                         <>
@@ -143,10 +168,10 @@ export default function Home() {
                     <Textarea
                         ref={textRef}
                         placeholder={
-                            "أسأل عن شركة " +
+                            "اسأل عن " +
                             (selectedCompany === "other"
-                                ? "المرفقة"
-                                : selectedCompany)
+                                ? "الشركة المرفقة"
+                                : "شركة " + selectedCompany)
                         }
                         className="!outline-none !ring-0 flex-1 px-2 flex items-center h-auto !border-none resize-none shadow-none"
                     />
@@ -173,51 +198,87 @@ export default function Home() {
             </motion.div>
 
             {!selectedCompany ? (
-                <div>
-                    <motion.p
-                        initial={{ y: -100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        className="text-[#0B3A3C] text-center px-4"
+                <div className="grid place-items-center gap-5">
+                    <div>
+                        <motion.p
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            className="text-[#0B3A3C] text-center px-4"
+                        >
+                            اختر الشركة التي تريد البحث عنها, او ارفق ملف الشركة
+                            التي تريد المعرفه عنها
+                        </motion.p>
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
+                            variants={variants}
+                            transition={{ staggerChildren: 0.1 }}
+                            className="flex flex-wrap justify-center gap-10 bg-white shadow-lg p-2 px-5 rounded-xl overflow-hidden mt-5"
+                        >
+                            <motion.button
+                                variants={variants}
+                                onClick={() => {
+                                    isOpenOrClosed.current =
+                                        switchRef.current.value === "on"
+                                            ? "closed"
+                                            : "open";
+                                    setSelectedCompany("علم");
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                                className=""
+                            >
+                                <Image
+                                    src={elmLogo}
+                                    alt="elm logo"
+                                    className="w-14"
+                                />
+                            </motion.button>
+                            <motion.button
+                                variants={variants}
+                                onClick={() => {
+                                    isOpenOrClosed.current =
+                                        switchRef.current.value === "on"
+                                            ? "closed"
+                                            : "open";
+                                    setSelectedCompany("STC");
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                                className=""
+                            >
+                                <Image src={STC} alt="STC" className="w-14" />
+                            </motion.button>
+                            <motion.button
+                                variants={variants}
+                                onClick={() => {
+                                    isOpenOrClosed.current =
+                                        switchRef.current.value === "on"
+                                            ? "closed"
+                                            : "open";
+                                    setSelectedCompany("other");
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                                className=""
+                            >
+                                <Image
+                                    src={add}
+                                    alt="add icon"
+                                    className="w-14"
+                                />
+                            </motion.button>
+                        </motion.div>
+                    </div>
+                    <select
+                        name=""
+                        id=""
+                        ref={switchRef}
+                        defaultValue={
+                            isOpenOrClosed.current === "closed" ? "on" : "off"
+                        }
+                        className="p-2 bg-transparent outline-none"
                     >
-                        اختر الشركة التي تريد البحث عنها, او ارفق ملف الشركة
-                        التي تريد المعرفه عنها
-                    </motion.p>
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        variants={variants}
-                        transition={{ staggerChildren: 0.1 }}
-                        className="flex flex-wrap justify-center gap-10 bg-white shadow-lg p-2 px-5 rounded-xl overflow-hidden mt-5"
-                    >
-                        <motion.button
-                            variants={variants}
-                            onClick={() => setSelectedCompany("علم")}
-                            whileHover={{ scale: 1.1 }}
-                            className=""
-                        >
-                            <Image
-                                src={elmLogo}
-                                alt="elm logo"
-                                className="w-14"
-                            />
-                        </motion.button>
-                        <motion.button
-                            variants={variants}
-                            onClick={() => setSelectedCompany("STC")}
-                            whileHover={{ scale: 1.1 }}
-                            className=""
-                        >
-                            <Image src={STC} alt="STC" className="w-14" />
-                        </motion.button>
-                        <motion.button
-                            variants={variants}
-                            onClick={() => setSelectedCompany("other")}
-                            whileHover={{ scale: 1.1 }}
-                            className=""
-                        >
-                            <Image src={add} alt="add icon" className="w-14" />
-                        </motion.button>
-                    </motion.div>
+                        <option value="off">مفتوح المصدر</option>
+                        <option value="on">مغلق المصدر</option>
+                    </select>
                 </div>
             ) : (
                 <>
@@ -248,10 +309,10 @@ export default function Home() {
                         <Textarea
                             ref={textRef}
                             placeholder={
-                                "أسأل عن شركة " +
+                                "اسأل عن " +
                                 (selectedCompany === "other"
-                                    ? "المرفقة"
-                                    : selectedCompany)
+                                    ? "الشركة المرفقة"
+                                    : "شركة " + selectedCompany)
                             }
                             className="!outline-none !ring-0 modern-scroll flex-1 px-2 flex items-center h-auto border-none resize-none shadow-none"
                         />
