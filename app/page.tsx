@@ -97,7 +97,6 @@ export default function Home() {
         } else {
             setMessage(messageObj);
         }
-        console.log(messageObj);
         setIsLoading(false);
     };
 
@@ -218,10 +217,10 @@ export default function Home() {
                             <motion.button
                                 variants={variants}
                                 onClick={() => {
-                                    isOpenOrClosed.current =
-                                        switchRef.current.value === "on"
-                                            ? "closed"
-                                            : "open";
+                                    // isOpenOrClosed.current =
+                                    //     switchRef.current.value === "on"
+                                    //         ? "closed"
+                                    //         : "open";
                                     setSelectedCompany("علم");
                                 }}
                                 whileHover={{ scale: 1.1 }}
@@ -236,10 +235,10 @@ export default function Home() {
                             <motion.button
                                 variants={variants}
                                 onClick={() => {
-                                    isOpenOrClosed.current =
-                                        switchRef.current.value === "on"
-                                            ? "closed"
-                                            : "open";
+                                    // isOpenOrClosed.current =
+                                    //     switchRef.current.value === "on"
+                                    //         ? "closed"
+                                    //         : "open";
                                     setSelectedCompany("STC");
                                 }}
                                 whileHover={{ scale: 1.1 }}
@@ -250,10 +249,10 @@ export default function Home() {
                             <motion.button
                                 variants={variants}
                                 onClick={() => {
-                                    isOpenOrClosed.current =
-                                        switchRef.current.value === "on"
-                                            ? "closed"
-                                            : "open";
+                                    // isOpenOrClosed.current =
+                                    //     switchRef.current.value === "on"
+                                    //         ? "closed"
+                                    //         : "open";
                                     setSelectedCompany("other");
                                 }}
                                 whileHover={{ scale: 1.1 }}
