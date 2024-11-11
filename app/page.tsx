@@ -105,7 +105,7 @@ export default function Home() {
                     }}
                     src={back}
                     alt="back icon"
-                    className="w-10 cursor-pointer absolute left-0"
+                    className="w-10 cursor-pointer absolute left-0 bg-white rounded-full p-2 shadow-lg"
                     priority
                 />
                 <Image src={logo} alt="logo" className="" priority />
