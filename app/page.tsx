@@ -34,16 +34,21 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(false);
     const textRef = useRef({} as HTMLTextAreaElement);
     const fileRef = useRef({} as HTMLInputElement);
+    const overflowContainerRef = useRef({} as HTMLDivElement);
     const sentMessage = useRef("");
     const [message, setMessage] = useState(null as ChatResponse | null);
-    console.log(message);
     const variants = {
         hidden: { opacity: 0, y: 100 },
         visible: { opacity: 1, y: 0 },
     };
     const sendMessageHandler = async () => {
         if (!textRef.current.value) return;
-        if (selectedCompany === "other" && fileRef.current && fileRef.current.files && fileRef.current.files[0].size === 0)
+        if (
+            selectedCompany === "other" &&
+            fileRef.current &&
+            fileRef.current.files &&
+            fileRef.current.files[0].size === 0
+        )
             return;
         sentMessage.current = textRef.current.value;
         textRef.current.value = "";
@@ -68,6 +73,14 @@ export default function Home() {
         setMessage(messageObj);
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        if (overflowContainerRef.current) {
+            overflowContainerRef.current.scrollTop =
+                overflowContainerRef.current.scrollHeight;
+        }
+    }, [isLoading]);
+
     const clearCookies = () => {
         const cookies = document.cookie.split(";");
 
@@ -96,7 +109,10 @@ export default function Home() {
                     priority
                 />
                 <Image src={logo} alt="logo" className="" priority />
-                <div className="overflow-y-auto modern-scroll overflow-x-hidden flex-1 w-full flex flex-col gap-2 my-3">
+                <div
+                    ref={overflowContainerRef}
+                    className="overflow-y-auto modern-scroll overflow-x-hidden flex-1 w-full flex flex-col gap-2 my-3"
+                >
                     {message?.messages.map(msg => {
                         if (msg.role === "user") {
                             return (
@@ -135,8 +151,9 @@ export default function Home() {
                         className="!outline-none !ring-0 flex-1 px-2 flex items-center h-auto !border-none resize-none shadow-none"
                     />
                     <button
+                        disabled={isLoading}
                         onClick={sendMessageHandler}
-                        className="px-5 h-8 w-24 bg-black hover:bg-[#21A07B] shadow-xl transition-colors text-white rounded-full"
+                        className="px-5 h-8 w-24 bg-black disabled:bg-gray-300 hover:bg-[#21A07B] shadow-xl transition-colors text-white rounded-full"
                     >
                         ارسال
                     </button>
@@ -160,7 +177,7 @@ export default function Home() {
                     <motion.p
                         initial={{ y: -100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
-                        className="text-[#0B3A3C] text-center"
+                        className="text-[#0B3A3C] text-center px-4"
                     >
                         اختر الشركة التي تريد البحث عنها, او ارفق ملف الشركة
                         التي تريد المعرفه عنها
@@ -239,8 +256,9 @@ export default function Home() {
                             className="!outline-none !ring-0 modern-scroll flex-1 px-2 flex items-center h-auto border-none resize-none shadow-none"
                         />
                         <button
+                            disabled={isLoading}
                             onClick={sendMessageHandler}
-                            className="px-5 h-8 w-min bg-black  hover:bg-[#21A07B] shadow-xl transition-colors text-white rounded-full flex items-center justify-center gap-2"
+                            className="px-5 h-8 w-min bg-black disabled:bg-gray-700  hover:bg-[#21A07B] shadow-xl transition-colors text-white rounded-full flex items-center justify-center gap-2"
                         >
                             ارسال{" "}
                             <svg

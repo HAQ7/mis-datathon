@@ -20,7 +20,7 @@ export default function RootLayout({
     return (
         <html dir="rtl">
             <body className={rubik.className}>
-                <section className="grid place-items-center h-screen overflow-hidden">
+                <section className="grid place-items-center min-h-screen overflow-hidden">
                     <Image
                         src={leftGlow}
                         alt="elm logo"
