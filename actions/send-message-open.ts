@@ -34,10 +34,10 @@ export async function sendMessageOpen(
     let loader;
     if (selectedCompany === "علم") {
         
-        loader = new PDFLoader(process.cwd() + "/elm.pdf");
+        loader = new PDFLoader("/elm.pdf");
     } else if (selectedCompany === "STC") {
        
-        loader = new PDFLoader(process.cwd() + "/stc.pdf");
+        loader = new PDFLoader("/stc.pdf");
     } else {
         loader = new PDFLoader(file);
     }
