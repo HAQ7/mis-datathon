@@ -8,8 +8,6 @@ import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
-import path from "path";
-import fs from "fs/promises";
 
 function isArabic(text: string) {
     // Arabic unicode range regex
@@ -34,10 +32,10 @@ export async function sendMessageOpen(
     let loader;
     if (selectedCompany === "علم") {
         
-        loader = new PDFLoader("/elm.pdf");
+        loader = new PDFLoader("./elm.pdf");
     } else if (selectedCompany === "STC") {
        
-        loader = new PDFLoader("/stc.pdf");
+        loader = new PDFLoader("./stc.pdf");
     } else {
         loader = new PDFLoader(file);
     }
