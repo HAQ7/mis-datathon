@@ -31,9 +31,9 @@ export async function sendMessageOpen(
     });
     let loader;
     if (selectedCompany === "علم") {
-        loader = new PDFLoader("./data/elm.pdf");
+        loader = new PDFLoader("elm.pdf");
     } else if (selectedCompany === "STC") {
-        loader = new PDFLoader("./data/stc.pdf");
+        loader = new PDFLoader("stc.pdf");
     } else {
         loader = new PDFLoader(file);
     }
@@ -62,7 +62,7 @@ export async function sendMessageOpen(
     const retrievedDocs = await retriever.invoke(question);
 
     if (isArabic(question)) {
-        question = question + " \n\n\n اجب على السؤال باللغة العربية";
+        question = question + " \n\n\n ! يجب عليك الاجابة على السؤال باللغة العربية";
     }
 
     console.log(question);
