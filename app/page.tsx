@@ -97,7 +97,7 @@ export default function Home() {
         } else {
             setMessage(messageObj);
         }
-        console.log(messageObj)
+        console.log(messageObj);
         setIsLoading(false);
     };
 
@@ -267,18 +267,27 @@ export default function Home() {
                             </motion.button>
                         </motion.div>
                     </div>
-                    <select
-                        name=""
-                        id=""
-                        ref={switchRef}
-                        defaultValue={
-                            isOpenOrClosed.current === "closed" ? "on" : "off"
-                        }
-                        className="p-2 bg-transparent outline-none"
+                    <motion.div
+                        initial={{ y: -100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className="flex justify-center items-center gap-2"
                     >
-                        <option value="off">مفتوح المصدر</option>
-                        <option value="on">مغلق المصدر</option>
-                    </select>
+                        <p className="font-bold"> نوع الذكاء الاصطناعي :</p>
+                        <select
+                            name=""
+                            id=""
+                            ref={switchRef}
+                            defaultValue={
+                                isOpenOrClosed.current === "closed"
+                                    ? "on"
+                                    : "off"
+                            }
+                            className="p-2 bg-white outline-none shadow-lg rounded-lg"
+                        >
+                            <option value="off">مفتوح المصدر</option>
+                            <option value="on">مغلق المصدر</option>
+                        </select>
+                    </motion.div>
                 </div>
             ) : (
                 <>

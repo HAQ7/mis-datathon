@@ -9,6 +9,13 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 
+function isArabic(text: string) {
+    // Arabic unicode range regex
+    const arabicRegex =
+        /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+    return arabicRegex.test(text);
+}
+
 export async function sendMessageOpen(
     question: string,
     selectedCompany: string,
@@ -53,6 +60,12 @@ export async function sendMessageOpen(
     });
 
     const retrievedDocs = await retriever.invoke(question);
+
+    if (isArabic(question)) {
+        question = question + " \n\n\n اجب على السؤال باللغة العربية";
+    }
+
+    console.log(question);
 
     const results = await ragChain.invoke({
         question: question,
