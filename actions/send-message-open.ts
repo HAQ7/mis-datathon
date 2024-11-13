@@ -32,10 +32,10 @@ export async function sendMessageOpen(
     let loader;
     if (selectedCompany === "علم") {
         
-        loader = new PDFLoader("./elm.pdf");
+        loader = new PDFLoader("./data/elm.pdf");
     } else if (selectedCompany === "STC") {
        
-        loader = new PDFLoader("./stc.pdf");
+        loader = new PDFLoader("./data/stc.pdf");
     } else {
         loader = new PDFLoader(file);
     }

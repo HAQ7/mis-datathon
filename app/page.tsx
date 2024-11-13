@@ -266,7 +266,7 @@ export default function Home() {
                             </motion.button>
                         </motion.div>
                     </div>
-                    {/* <motion.div
+                    <motion.div
                         initial={{ y: -100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         className="flex justify-center items-center gap-2"
@@ -286,7 +286,7 @@ export default function Home() {
                             <option value="off">مفتوح المصدر</option>
                             <option value="on">مغلق المصدر</option>
                         </select>
-                    </motion.div> */}
+                    </motion.div>
                 </div>
             ) : (
                 <>

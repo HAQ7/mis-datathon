@@ -204,29 +204,3 @@ export async function createAssistantWithFile({
         throw error;
     }
 }
-
-// Helper function to delete assistant and associated file
-// export async function deleteAssistantAndFile(): Promise<void> {
-//     try {
-//         const cookieStore = cookies();
-//         const assistantId = cookieStore.get("assistantId")?.value;
-//         const fileId = cookieStore.get("fileId")?.value;
-
-//         if (!assistantId || !fileId) {
-//             throw new Error("No assistant or file found");
-//         }
-
-//         // Delete file
-//         await openai.files.del(fileId);
-
-//         // Delete assistant
-//         await openai.beta.assistants.delete(assistantId);
-
-//         // Remove cookies
-//         cookieStore.delete("assistantId");
-//         cookieStore.delete("fileId");
-//     } catch (error) {
-//         console.error("Error deleting assistant and file:", error);
-//         throw error;
-//     }
-// }
